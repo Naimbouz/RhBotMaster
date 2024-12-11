@@ -166,13 +166,14 @@ def calculate_similarity(job_desc_sections, cv_sections):
     return similarity_scores
 
 # Function to calculate weighted score based on section weights
-def calculate_weighted_score(similarity_scores, section_weights):
+def calculate_weighted_score(similarity_scores, section_weights, job_description_sections):
     """
     Calculates weighted score based on section weights.
 
     Args:
-        similarity_scores (dict): Dictionary containing similarity scores for each section.
-        section_weights (dict): Dictionary containing section weights.
+        similarity_scores (dict): Similarity scores for each section.
+        section_weights (dict): Weights for each section.
+        job_description_sections (dict): Job description sections and their content.
 
     Returns:
         float: Weighted score.
@@ -180,18 +181,16 @@ def calculate_weighted_score(similarity_scores, section_weights):
     weighted_score = 0
     total_weight = 0
 
-    # Sum weighted scores for sections that exist in both job description and CV
     for section, score in similarity_scores.items():
-        if score is not None:  # Only include sections that have a similarity score
-            weight = section_weights.get(section, 1)  # Default weight is 1 if not provided
+        # Assign full score if job description section is empty or missing
+        score = 1.0 if not job_description_sections.get(section) else score
+
+        if score is not None:
+            weight = section_weights.get(section, 1)  # Default weight is 1
             weighted_score += score * weight
             total_weight += weight
 
-    # Normalize the weighted score if total_weight is greater than 0
-    if total_weight > 0:
-        weighted_score /= total_weight
-
-    return weighted_score
+    return weighted_score / total_weight if total_weight > 0 else 0
 
 # Function to process all CVs in a directory and aggregate output
 def process_all_cvs_in_folder(folder_path, output_folder, aggregated_output):
@@ -293,9 +292,9 @@ def calculate_weighted_score(similarity_scores, section_weights, job_description
     Calculates weighted score based on section weights.
 
     Args:
-        similarity_scores (dict): Dictionary containing similarity scores for each section.
-        section_weights (dict): Dictionary containing section weights.
-        job_description_sections (dict): Dictionary containing job description sections and their content.
+        similarity_scores (dict): Similarity scores for each section.
+        section_weights (dict): Weights for each section.
+        job_description_sections (dict): Job description sections and their content.
 
     Returns:
         float: Weighted score.
@@ -304,20 +303,15 @@ def calculate_weighted_score(similarity_scores, section_weights, job_description
     total_weight = 0
 
     for section, score in similarity_scores.items():
-        # Check if the job description section is empty
-        if not job_description_sections.get(section):  # Empty or missing job description section
-            score = 1.0  # Assign full score
+        # Assign full score if job description section is empty or missing
+        score = 1.0 if not job_description_sections.get(section) else score
 
-        if score is not None:  # Include only sections with valid scores
-            weight = section_weights.get(section, 1)  # Default weight is 1 if not provided
+        if score is not None:
+            weight = section_weights.get(section, 1)  # Default weight is 1
             weighted_score += score * weight
             total_weight += weight
 
-    # Normalize the weighted score by the total weight
-    if total_weight > 0:
-        weighted_score /= total_weight
-
-    return weighted_score
+    return weighted_score / total_weight if total_weight > 0 else 0
 
 # Main execution logic
 if __name__ == "__main__":

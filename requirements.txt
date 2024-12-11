@@ -1,0 +1,4 @@
+pdfplumber
+transformers
+sentence-transformers
+pandas
